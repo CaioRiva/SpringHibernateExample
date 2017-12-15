@@ -1,0 +1,10 @@
+personal\criva\springhibernateexample\model\dao\AbstractGenericDao.class
+personal\criva\springhibernateexample\service\CustomerService.class
+personal\criva\springhibernateexample\model\dao\CustomerDao.class
+personal\criva\springhibernateexample\model\vo\CustomerVo.class
+personal\criva\springhibernateexample\service\ICustomerService.class
+personal\criva\springhibernateexample\config\SpringAppConfig.class
+personal\criva\springhibernateexample\Main.class
+personal\criva\springhibernateexample\model\dao\IGenericDao.class
+personal\criva\springhibernateexample\config\ApplicationContextProvider.class
+personal\criva\springhibernateexample\model\dao\ICustomerDao.class
