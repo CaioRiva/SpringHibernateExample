@@ -85,7 +85,7 @@ public abstract class AbstractGenericDao<T extends Serializable> implements IGen
 		    "SELECT e FROM " + entityClass.getName() 
 		    	+ " e WHERE e." + property + " = :value");
 
-	    queryResult = entityManager.createNamedQuery(query.toString())
+	    queryResult = entityManager.createQuery(query.toString())
 		    .setParameter("value", value).getResultList();
 	} catch (Exception e) {
 
