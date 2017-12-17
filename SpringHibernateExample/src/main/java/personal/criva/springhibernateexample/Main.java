@@ -1,5 +1,7 @@
 package personal.criva.springhibernateexample;
 
+import java.util.List;
+
 import personal.criva.springhibernateexample.config.ApplicationContextProvider;
 import personal.criva.springhibernateexample.model.vo.CustomerVo;
 import personal.criva.springhibernateexample.service.ICustomerService;
@@ -10,10 +12,12 @@ public class Main {
 	    .getBean(ICustomerService.class);
 
     public Main() {
-	
-	for(CustomerVo customer : customerService.findCustomerByPhoneNumber("333")) {
-	    
-	    System.out.println(customer.getId());
+
+	List<CustomerVo> customers = customerService.findAllCustomers();
+
+	for (CustomerVo customer : customers) {
+
+	    customerService.deleteCustomerById(customer.getId());
 	}
     }
 

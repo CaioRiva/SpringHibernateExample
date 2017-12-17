@@ -50,6 +50,32 @@ public class CustomerService implements ICustomerService {
     }
 
     @Transactional
+    public void deleteCustomer(CustomerVo customer) {
+
+	try {
+
+	    customerDao.delete(customer);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+    
+    @Transactional
+    public void deleteCustomerById(Long id) {
+
+	try {
+
+	    customerDao.deleteById(id);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+
+    @Transactional
     public CustomerVo findCustomerById(Long id) {
 
 	CustomerVo foundCustomer = null;
@@ -68,18 +94,35 @@ public class CustomerService implements ICustomerService {
 
     @Transactional
     public List<CustomerVo> findCustomerByPhoneNumber(String phoneNumber) {
-	
-	List<CustomerVo> foundCustomer = null;
+
+	List<CustomerVo> foundCustomers = null;
 
 	try {
 
-	    foundCustomer = customerDao.findByProperty("phoneNumber", phoneNumber);
+	    foundCustomers = customerDao.findByProperty("phoneNumber", phoneNumber);
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
 	    e.printStackTrace();
 	}
 
-	return foundCustomer;
+	return foundCustomers;
+    }
+
+    @Transactional
+    public List<CustomerVo> findAllCustomers() {
+	
+	List<CustomerVo> foundCustomers = null;
+
+	try {
+
+	    foundCustomers = customerDao.findAll();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return foundCustomers;
     }
 }
