@@ -61,13 +61,39 @@ public class CustomerService implements ICustomerService {
 	    e.printStackTrace();
 	}
     }
-    
+
+    @Transactional
+    public void deleteCustomers(List<CustomerVo> customers) {
+
+	try {
+
+	    customerDao.delete(customers);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+
+    @Transactional
+    public void deleteAllCustomers() {
+
+	try {
+
+	    customerDao.deleteAll();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+
     @Transactional
     public void deleteCustomerById(Long id) {
 
 	try {
 
-	    customerDao.deleteById(id);
+	    customerDao.deleteById("id", id);
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -93,13 +119,30 @@ public class CustomerService implements ICustomerService {
     }
 
     @Transactional
+    public List<CustomerVo> findAllCustomerById(List<Long> ids) {
+	
+	List<CustomerVo> foundCustomers = null;
+	
+	try {
+
+	    foundCustomers = customerDao.findAllById("id", ids);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return foundCustomers;
+    }
+
+    @Transactional
     public List<CustomerVo> findCustomerByPhoneNumber(String phoneNumber) {
 
 	List<CustomerVo> foundCustomers = null;
 
 	try {
 
-	    foundCustomers = customerDao.findByProperty("phoneNumber", phoneNumber);
+	    foundCustomers = customerDao.findByAttribute("phoneNumber", phoneNumber);
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -111,7 +154,7 @@ public class CustomerService implements ICustomerService {
 
     @Transactional
     public List<CustomerVo> findAllCustomers() {
-	
+
 	List<CustomerVo> foundCustomers = null;
 
 	try {

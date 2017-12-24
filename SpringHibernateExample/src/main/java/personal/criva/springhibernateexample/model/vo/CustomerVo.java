@@ -43,19 +43,6 @@ public class CustomerVo implements Serializable{
     public CustomerVo() {
 	
     }
-    
-    
-    
-    public CustomerVo(Long id, String fullName, String identityDocument, String email, String phoneNumber,
-	    Calendar birthDate) {
-
-	this.id = id;
-	this.fullName = fullName;
-	this.identityDocument = identityDocument;
-	this.email = email;
-	this.phoneNumber = phoneNumber;
-	this.birthDate = birthDate;
-    }
 
     public CustomerVo(String fullName, String identityDocument, String email, 
 	    String phoneNumber, Calendar birthDate) {

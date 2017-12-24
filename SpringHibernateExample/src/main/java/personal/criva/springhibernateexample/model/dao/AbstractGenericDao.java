@@ -2,15 +2,17 @@ package personal.criva.springhibernateexample.model.dao;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
 
 @Repository
-public abstract class AbstractGenericDao<T extends Serializable> implements IGenericDao<T> {
+public abstract class AbstractGenericDao<T extends Serializable, K> implements IGenericDao<T, K> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -69,13 +71,21 @@ public abstract class AbstractGenericDao<T extends Serializable> implements IGen
 	}
     }
 
-    public <K> void deleteById(K id) {
+    public void delete(Collection<T> entities) {
+
+	for (T entity : entities) {
+
+	    delete(entity);
+	}
+    }
+
+    public void deleteAll() {
+
+	StringBuilder queryString = new StringBuilder("DELETE FROM " + entityClass.getName());
 
 	try {
 
-	    StringBuilder query = new StringBuilder("DELETE FROM " + entityClass.getName() + " e WHERE e.id = :id");
-
-	    entityManager.createQuery(query.toString()).setParameter("id", id).executeUpdate();
+	    entityManager.createQuery(queryString.toString()).executeUpdate();
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -83,7 +93,37 @@ public abstract class AbstractGenericDao<T extends Serializable> implements IGen
 	}
     }
 
-    public <K> T findById(K id) {
+    public void deleteById(String idAttributeName, Object id) {
+
+	try {
+
+	    StringBuilder queryString = new StringBuilder(
+		    "DELETE FROM " + entityClass.getName() + " e WHERE e.id = :id");
+	    entityManager.createQuery(queryString.toString()).setParameter(idAttributeName, id).executeUpdate();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+
+    public T getReference(Object id) {
+
+	T referencedEntity = null;
+
+	try {
+
+	    referencedEntity = entityManager.getReference(entityClass, id);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return referencedEntity;
+    }
+
+    public T findById(Object id) {
 
 	T foundEntity = null;
 
@@ -100,16 +140,34 @@ public abstract class AbstractGenericDao<T extends Serializable> implements IGen
     }
 
     @SuppressWarnings("unchecked")
-    public List<T> findByProperty(String property, Object value) {
+    public List<T> findAllById(String idAttributeName, List<K> values) {
+
+	List<T> queryResult = null;
+	Query query = createQueryByIds(idAttributeName, values);
+
+	try {
+
+	    queryResult = query.getResultList();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return queryResult;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<T> findByAttribute(String attributeName, Object value) {
 
 	List<T> queryResult = null;
 
 	try {
 
-	    StringBuilder query = new StringBuilder(
-		    "SELECT e FROM " + entityClass.getName() + " e WHERE e." + property + " = :value");
-
-	    queryResult = entityManager.createQuery(query.toString()).setParameter("value", value).getResultList();
+	    StringBuilder queryString = new StringBuilder(
+		    "SELECT e FROM " + entityClass.getName() + " e WHERE e." + attributeName + " = :value");
+	    queryResult = entityManager.createQuery(queryString.toString()).setParameter("value", value)
+		    .getResultList();
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -126,9 +184,8 @@ public abstract class AbstractGenericDao<T extends Serializable> implements IGen
 
 	try {
 
-	    StringBuilder query = new StringBuilder("FROM " + entityClass.getName());
-
-	    queryResult = entityManager.createQuery(query.toString()).getResultList();
+	    StringBuilder queryString = new StringBuilder("FROM " + entityClass.getName());
+	    queryResult = entityManager.createQuery(queryString.toString()).getResultList();
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -137,4 +194,24 @@ public abstract class AbstractGenericDao<T extends Serializable> implements IGen
 
 	return queryResult;
     }
+
+    private Query createQueryByIds(String idAttributeName, List<K> values) {
+
+	Query query = null;
+	StringBuilder queryString = new StringBuilder(
+		"SELECT e FROM " + entityClass.getName() + " e WHERE e." + idAttributeName + " IN (:values)");
+
+	try {
+
+	    query = entityManager.createQuery(queryString.toString());
+	    query.setParameter("values", values);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return query;
+    }
+
 }

@@ -12,9 +12,15 @@ public interface ICustomerService {
 
     public void deleteCustomer(CustomerVo customer);
     
+    public void deleteCustomers(List<CustomerVo> customers);
+    
+    public void deleteAllCustomers();
+    
     public void deleteCustomerById(Long id);
     
     public CustomerVo findCustomerById(Long id);
+    
+    public List<CustomerVo> findAllCustomerById(List<Long> id);
     
     public List<CustomerVo> findCustomerByPhoneNumber(String phoneNumber);
     
