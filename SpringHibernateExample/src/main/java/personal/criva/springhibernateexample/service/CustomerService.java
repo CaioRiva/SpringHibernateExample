@@ -1,5 +1,6 @@
 package personal.criva.springhibernateexample.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,32 +135,52 @@ public class CustomerService implements ICustomerService {
 
 	return foundCustomers;
     }
-
-    @Transactional
-    public List<CustomerVo> findCustomerByPhoneNumber(String phoneNumber) {
-
-	List<CustomerVo> foundCustomers = null;
-
-	try {
-
-	    foundCustomers = customerDao.findByAttribute("phoneNumber", phoneNumber);
-	} catch (Exception e) {
-
-	    System.err.println(e.getMessage());
-	    e.printStackTrace();
-	}
-
-	return foundCustomers;
-    }
-
+    
     @Transactional
     public List<CustomerVo> findAllCustomers() {
-
+	
 	List<CustomerVo> foundCustomers = null;
+	
+	try {
+	    
+	    foundCustomers = customerDao.findAll("fullName");
+	} catch (Exception e) {
+	    
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+	
+	return foundCustomers;
+    }
+
+    @Transactional
+    public Long countCustomersByPhoneNumber(String phoneNumber) {
+	
+	Long customers = null;
 
 	try {
 
-	    foundCustomers = customerDao.findAll();
+	    customers = customerDao.countByAttribute("phoneNumber", phoneNumber);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return customers;
+    }
+    
+    @Transactional
+    public List<CustomerVo> findCustomerByPhoneNumberOrderedByFullName(String phoneNumber) {
+
+	List<CustomerVo> foundCustomers = null;
+
+	List<String> orderByAttributes = new ArrayList<String>();
+	orderByAttributes.add("fullName");
+	
+	try {
+
+	    foundCustomers = customerDao.findByAttribute("phoneNumber", phoneNumber, orderByAttributes);
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -168,4 +189,36 @@ public class CustomerService implements ICustomerService {
 
 	return foundCustomers;
     }
+
+    @Transactional
+    public List<CustomerVo> findCustomerByPhoneNumberAndEmailOrderedByFullName(String phoneNumber, String email) {
+	
+	List<CustomerVo> foundCustomers = null;
+
+	List<String> attributesNames = new ArrayList<String>();
+	List<Object> values = new ArrayList<Object>();
+	List<String> orderByAttributes = new ArrayList<String>();
+	
+	attributesNames.add("phoneNumber");
+	attributesNames.add("email");
+	
+	values.add(phoneNumber);
+	values.add(email);
+	
+	orderByAttributes.add("fullName");
+	
+	try {
+
+	    foundCustomers = customerDao.findByAttributes(attributesNames, values, orderByAttributes);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return foundCustomers;
+    }
+    
+    
+
 }

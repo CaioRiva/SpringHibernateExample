@@ -22,8 +22,13 @@ public interface ICustomerService {
     
     public List<CustomerVo> findAllCustomerById(List<Long> id);
     
-    public List<CustomerVo> findCustomerByPhoneNumber(String phoneNumber);
-    
     public List<CustomerVo> findAllCustomers();
+    
+    public Long countCustomersByPhoneNumber(String phoneNumber);
+    
+    public List<CustomerVo> findCustomerByPhoneNumberOrderedByFullName(String phoneNumber);
+    
+    public List<CustomerVo> findCustomerByPhoneNumberAndEmailOrderedByFullName(String phoneNumber, String email);
+    
     
 }

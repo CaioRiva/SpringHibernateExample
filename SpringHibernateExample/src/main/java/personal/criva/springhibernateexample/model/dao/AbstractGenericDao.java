@@ -14,6 +14,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public abstract class AbstractGenericDao<T extends Serializable, K> implements IGenericDao<T, K> {
 
+    private static final String attributesValuesSizeException = "'values' parameter size can not be less than 'attributesNames' parameter size.";
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -158,16 +160,14 @@ public abstract class AbstractGenericDao<T extends Serializable, K> implements I
     }
 
     @SuppressWarnings("unchecked")
-    public List<T> findByAttribute(String attributeName, Object value) {
+    public List<T> findAll() {
 
 	List<T> queryResult = null;
 
 	try {
 
-	    StringBuilder queryString = new StringBuilder(
-		    "SELECT e FROM " + entityClass.getName() + " e WHERE e." + attributeName + " = :value");
-	    queryResult = entityManager.createQuery(queryString.toString()).setParameter("value", value)
-		    .getResultList();
+	    StringBuilder queryString = new StringBuilder("FROM " + entityClass.getName());
+	    queryResult = entityManager.createQuery(queryString.toString()).getResultList();
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -177,15 +177,77 @@ public abstract class AbstractGenericDao<T extends Serializable, K> implements I
 	return queryResult;
     }
 
-    @SuppressWarnings("unchecked")
-    public List<T> findAll() {
+    public List<T> findAll(String orderByAttribute) {
 
 	List<T> queryResult = null;
 
 	try {
 
-	    StringBuilder queryString = new StringBuilder("FROM " + entityClass.getName());
-	    queryResult = entityManager.createQuery(queryString.toString()).getResultList();
+	    StringBuilder queryString = new StringBuilder(
+		    "SELECT e FROM " + entityClass.getName() + " e ORDER BY e." + orderByAttribute);
+	    entityManager.createQuery(queryString.toString()).getResultList();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return queryResult;
+
+    }
+
+    public Long countByAttribute(String attributeName, Object value) {
+
+	Long countResult = null;
+
+	try {
+
+	    countResult = (Long) createCountQueryByAttribute(attributeName, value).getResultList().get(0);
+
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return countResult;
+    }
+
+    public List<T> findByAttribute(String attributeName, Object value) {
+
+	return findByAttribute(attributeName, value, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<T> findByAttribute(String attributeName, Object value, List<String> orderByAttributes) {
+
+	List<T> queryResult = null;
+
+	try {
+
+	    queryResult = createQueryByAttribute(attributeName, value, orderByAttributes).getResultList();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return queryResult;
+    }
+
+    public List<T> findByAttributes(List<String> attributesNames, List<Object> values) {
+
+	return findByAttributes(attributesNames, values, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<T> findByAttributes(List<String> attributesNames, List<Object> values, List<String> orderByAttributes) {
+
+	List<T> queryResult = null;
+
+	try {
+
+	    queryResult = createQueryByAttributes(attributesNames, values, orderByAttributes).getResultList();
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -214,4 +276,108 @@ public abstract class AbstractGenericDao<T extends Serializable, K> implements I
 	return query;
     }
 
+    private Query createCountQueryByAttribute(String attributeName, Object value) {
+
+	Query query = null;
+	StringBuilder queryString = new StringBuilder(
+		"SELECT COUNT(1) FROM " + entityClass.getName() + " e WHERE e." + attributeName + " = :value");
+
+	try {
+
+	    query = entityManager.createQuery(queryString.toString());
+	    query.setParameter("value", value);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return query;
+    }
+
+    private Query createQueryByAttribute(String attributeName, Object value, List<String> orderByAttributes) {
+
+	Query query = null;
+	StringBuilder queryString = new StringBuilder(
+		"SELECT e FROM " + entityClass.getName() + " e WHERE e." + attributeName + " = :value");
+
+	queryString.append(createOrderByStatement(orderByAttributes));
+	try {
+
+	    query = entityManager.createQuery(queryString.toString());
+	    query.setParameter("value", value);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return query;
+    }
+
+    private Query createQueryByAttributes(List<String> attributesNames, List<Object> values,
+	    List<String> orderByAttributes) {
+
+	if (values.size() < attributesNames.size()) {
+
+	    throw new IllegalArgumentException(attributesValuesSizeException);
+	}
+
+	Query query = null;
+	StringBuilder queryString = new StringBuilder("SELECT e FROM " + entityClass.getName() + " e WHERE ");
+
+	for (int i = 0; i < attributesNames.size(); i++) {
+
+	    if (i != 0) {
+
+		queryString.append(" AND ");
+	    }
+
+	    queryString.append("e.");
+	    queryString.append(attributesNames.get(i));
+	    queryString.append(" = ?");
+	    queryString.append(i + 1);
+	}
+
+	queryString.append(createOrderByStatement(orderByAttributes));
+
+	try {
+
+	    query = entityManager.createQuery(queryString.toString());
+	    
+	    for (int i = 0; i < attributesNames.size(); i++) {
+		
+		query.setParameter(i + 1, values.get(i));
+	    }
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return query;
+    }
+
+    private String createOrderByStatement(List<String> orderByAttributes) {
+
+	StringBuilder orderByString = new StringBuilder();
+
+	if (orderByAttributes != null && orderByAttributes.size() > 0) {
+
+	    orderByString.append(" ORDER BY ");
+
+	    for (int i = 0; i < orderByAttributes.size(); i++) {
+
+		if (i != 0) {
+
+		    orderByString.append(" ,");
+		}
+
+		orderByString.append(" e.");
+		orderByString.append(orderByAttributes.get(i));
+	    }
+	}
+
+	return orderByString.toString();
+    }
 }

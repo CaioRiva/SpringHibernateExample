@@ -1,8 +1,5 @@
 package personal.criva.springhibernateexample;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import personal.criva.springhibernateexample.config.ApplicationContextProvider;
 import personal.criva.springhibernateexample.service.ICustomerService;
 
@@ -13,18 +10,14 @@ public class Main {
 
     public Main() {
 	
-	
 //	Calendar date = Calendar.getInstance();
 //	date.set(2000, 2, 25);
-
-//	CustomerVo customer = new CustomerVo("Test2", "222", "test@email.com", "000", date);
+//
+//	CustomerVo customer = new CustomerVo("Test3", "333", "test@email.com", "111", date);
+//	
+//	customerService.saveCustomer(customer);
 	
-	List<Long> ids = new ArrayList<Long>();
-	
-	ids.add(10L);
-	ids.add(11L);
-	
-	customerService.findAllCustomerById(ids);
+	customerService.findCustomerByPhoneNumberAndEmailOrderedByFullName("111", "test@email.com");
     }
 
     public static void main(String[] args) {
