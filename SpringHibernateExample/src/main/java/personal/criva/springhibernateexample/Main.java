@@ -10,6 +10,8 @@ public class Main {
 
     public Main() {
 	
+	//Example code:
+	
 //	Calendar date = Calendar.getInstance();
 //	date.set(2000, 2, 25);
 //

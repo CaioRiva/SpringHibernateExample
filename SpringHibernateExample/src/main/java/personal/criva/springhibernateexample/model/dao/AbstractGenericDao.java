@@ -3,7 +3,9 @@ package personal.criva.springhibernateexample.model.dao;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -102,6 +104,44 @@ public abstract class AbstractGenericDao<T extends Serializable, K> implements I
 	    StringBuilder queryString = new StringBuilder(
 		    "DELETE FROM " + entityClass.getName() + " e WHERE e.id = :id");
 	    entityManager.createQuery(queryString.toString()).setParameter(idAttributeName, id).executeUpdate();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+
+    
+    
+    public void refresh(T entity) {
+	
+	try {
+
+	    entityManager.refresh(entity);
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+    }
+
+    public void flush() {
+	
+	try {
+
+	    entityManager.flush();
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	} 
+	
+    }
+
+    public void clear() {
+	try {
+
+	    entityManager.clear();
 	} catch (Exception e) {
 
 	    System.err.println(e.getMessage());
@@ -257,6 +297,92 @@ public abstract class AbstractGenericDao<T extends Serializable, K> implements I
 	return queryResult;
     }
 
+    @SuppressWarnings("unchecked")
+    public List<T> findByNativeQuery(String nativeQueryName, Object... values) {
+	
+	Query query = null;
+	
+	try {
+	    
+	    query = entityManager.createNativeQuery(nativeQueryName);
+	    
+	    if (values != null) {
+		
+		for (int i = 0; i < values.length; i++) {
+		    
+		    query.setParameter(i + 1, values[i]);
+		}
+	    }
+	} catch (Exception e) {
+	    
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+	
+	return query.getResultList();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<T> findByNamedQuery(String namedQueryName, Hashtable<?, ?> values) {
+
+	Query query = null;
+
+	try {
+
+	    query = entityManager.createNamedQuery(namedQueryName);
+
+	    if (values != null) {
+
+		for (Entry<?, ?> entry : values.entrySet()) {
+
+		    if (entry.getKey() instanceof String) {
+
+			query.setParameter((String) entry.getKey(), entry.getValue());
+		    } else {
+
+			query.setParameter((Integer) entry.getKey(), entry.getValue());
+		    }
+		}
+	    }
+	} catch (Exception e) {
+
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+
+	return query.getResultList();
+    }
+
+    public int executeByNamedQuery(String namedQueryName, Hashtable<?, ?> values) {
+	
+	Query query = null;
+	
+	try {
+	    
+	    query = entityManager.createNamedQuery(namedQueryName);
+	    
+	    if (values != null) {
+		
+		for (Entry<?, ?> entry : values.entrySet()) {
+		    
+		    if (entry.getKey() instanceof String) {
+			
+			query.setParameter((String) entry.getKey(), entry.getValue());
+		    } else {
+			
+			query.setParameter((Integer) entry.getKey(), entry.getValue());
+		    }
+		}
+	    }
+	} catch (Exception e) {
+	    
+	    System.err.println(e.getMessage());
+	    e.printStackTrace();
+	}
+	
+	return query.executeUpdate();
+    }
+
     private Query createQueryByIds(String idAttributeName, List<K> values) {
 
 	Query query = null;
@@ -344,9 +470,9 @@ public abstract class AbstractGenericDao<T extends Serializable, K> implements I
 	try {
 
 	    query = entityManager.createQuery(queryString.toString());
-	    
+
 	    for (int i = 0; i < attributesNames.size(); i++) {
-		
+
 		query.setParameter(i + 1, values.get(i));
 	    }
 	} catch (Exception e) {
